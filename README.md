@@ -118,7 +118,7 @@ The storefront has been designed to meet all the requirements of modern e-commer
 
 ```
 
-git clone https://github.com/rigby-sh/solace-medusa-starter.git
+git clone https://github.com/KsorK0505/shopping-websites-next.js.git
 
 ```
 
@@ -216,7 +216,3 @@ Deploying your application on Vercel is a quick and straightforward process that
 &nbsp;
 
 ## Contributors
-
-<a href = "https://github.com/rigby-sh/solace-medusa-starter/network/dependencies">
-  <img src = "https://contrib.rocks/image?repo=rigby-sh/solace-medusa-starter"/>
-</a>
