@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { notFound } from 'next/navigation'
 
 import { storeSortOptions } from '@lib/constants'
@@ -20,39 +20,56 @@ import PaginatedProducts from './paginated-products'
 
 export const runtime = 'edge'
 
-export default async function StoreTemplate({
+export default function StoreTemplate({
   searchParams,
   params,
 }: {
   searchParams: Record<string, string>
   params?: { countryCode?: string }
 }) {
-  const { sortBy, page, collection, type, material, price } = searchParams
-  const region = await getRegion(params.countryCode)
+  const { sortBy, page, collection, type, material, price } = searchParams;
+  const [region, setRegion] = useState({});
 
-  if (!region) {
-    return notFound()
-  }
-
-  const pageNumber = page ? parseInt(page) : 1
-  const filters = await getStoreFilters()
-
-  const { results, count } = await search({
-    currency_code: region.currency_code,
-    order: sortBy,
-    page: pageNumber,
-    collection: collection?.split(','),
-    type: type?.split(','),
-    material: material?.split(','),
-    price: price?.split(','),
-  })
+  const pageNumber = page ? parseInt(page) : 1;
+  const [filters, setFilters] = useState({collection: [], material: [], type: []});
+  const [results, setResults] = useState([]);
+  const [count, setCount] = useState(0);
 
   // TODO: Add logic in future
-  const { products: recommendedProducts } = await getProductsList({
-    pageParam: 0,
-    queryParams: { limit: 9 },
-    countryCode: params.countryCode,
-  }).then(({ response }) => response)
+  const [recommendedProducts, setRecommendProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchSearch = async () => {
+      const response = await search({
+        currency_code: region.currency_code,
+        order: sortBy,
+        page: pageNumber,
+        collection: collection?.split(','),
+        type: type?.split(','),
+        material: material?.split(','),
+        price: price?.split(','),
+      });
+      setResults(response.results);
+      setCount(response.count);
+    
+    };
+
+    const fetchProducts = async () => {
+      const response = await getProductsList({
+        pageParam: 0,
+        queryParams: { limit: 9 },
+        countryCode: params.countryCode,
+      });
+
+      setRecommendProducts(response.response.products);
+    }
+    getRegion(params.countryCode).then(response => setRegion(response))
+    
+    getStoreFilters().then(response => setFilters(response || []));
+
+    fetchSearch();
+    fetchProducts();
+  }, []);
 
   return (
     <>
